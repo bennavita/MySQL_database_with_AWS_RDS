@@ -4,11 +4,11 @@ from credentials import user, password, host, port, database, input_dict
 
 
 class ManageDataBase(object):
-    def __init__(self, database_name):
+    def __init__(self, user, password, host, port, input_dict, database_name):
         try:
             # Attempt to establish a connexion with AWS
             self.engine = self.database_engine()
-            self.db = self.connect_database()
+            self.session = self.connect_database()
             print(f"Connexion to {host} as {user} has been successful.")
         except Exception as e:
             print(
@@ -17,6 +17,11 @@ class ManageDataBase(object):
         finally:
             self.columns = [key for key in input_dict.keys()][1:-1]
             self.cursor = self.db.cursor()
+            self.user = user
+            self.password = password
+            self.host = host
+            self.dict = input_dict
+            self.port = port
             self.database_name = database_name
             self.create_database()
             self.select_database()
@@ -40,13 +45,13 @@ class ManageDataBase(object):
     def database_engine(self):
         return create_engine(
             url="mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(
-                user, password, host, port, database
+                self.user, self.password, self.host, self.port, self.database_name
             )
         )
 
     def close_chanel(self):
         try:
-            self.db.close()
+            self.session.close()
             self.engine.dispose()
             print("Connection with the database has been successfully closed")
         except Exception as e:
@@ -55,8 +60,8 @@ class ManageDataBase(object):
             )
 
 class ManageTable(ManageDataBase):
-    def __init__(self, database_name, table):
-        super().__init__(database_name)
+    def __init__(self, user, password, host, port, input_dict, database_name, table):
+        super().__init__(user, password, host, port, input_dict, database_name)
         self.table_name = table
         self.columns = [key for key in input_dict.keys()][1:-1]
         self.create_table()
