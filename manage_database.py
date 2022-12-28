@@ -1,33 +1,33 @@
 import pymysql
 from sqlalchemy import create_engine
-from credentials import user, password, host, port, database, input_dict
 
 
 class ManageDataBase(object):
-    def __init__(self, user, password, host, port, input_dict, database_name):
+    def __init__(self, user:str, password:str, host:str, port:str, input_dict:dict[str: str], database_name:str):
+
+        #First and last key are not columns name (ID and Key of Table)
+        self.columns = [key for key in input_dict.keys()][1:-1]
+        self.user = user
+        self.password = password
+        self.host = host
+        self.dict = input_dict
+        self.port = port
+        self.database_name = database_name
+
         try:
             # Attempt to establish a connexion with AWS
             self.engine = self.database_engine()
             self.session = self.connect_database()
+            self.cursor = self.session.cursor()
+            self.create_database()
+            self.select_database()
             print(f"Connexion to {host} as {user} has been successful.")
         except Exception as e:
             print(
                 f"Connexion was unsuccessful due to the following error: {e}")
 
-        finally:
-            self.columns = [key for key in input_dict.keys()][1:-1]
-            self.cursor = self.db.cursor()
-            self.user = user
-            self.password = password
-            self.host = host
-            self.dict = input_dict
-            self.port = port
-            self.database_name = database_name
-            self.create_database()
-            self.select_database()
-
     def connect_database(self):
-        return pymysql.connect(host=host, user=user, password=password)
+        return pymysql.connect(host=self.host, user=self.user, password=self.password)
 
     def create_database(self):
         sql = f"""CREATE DATABASE IF NOT EXISTS {self.database_name}"""
@@ -60,10 +60,9 @@ class ManageDataBase(object):
             )
 
 class ManageTable(ManageDataBase):
-    def __init__(self, user, password, host, port, input_dict, database_name, table):
-        super().__init__(user, password, host, port, input_dict, database_name)
+    def __init__(self, user:str, password:str, host:str, port:int, input_dict:dict[str, str], database_name: str, table:str):
+        super().__init__(user=user, password=password, host=host, port=port, input_dict=input_dict, database_name=database_name)
         self.table_name = table
-        self.columns = [key for key in input_dict.keys()][1:-1]
         self.create_table()
 
     def create_table(self):
@@ -73,7 +72,8 @@ class ManageTable(ManageDataBase):
         Be aware that any change will create a new table in the database
 
         """
-        parameters = str([f'{key} {value}' for key, value in input_dict.items()])[1:-1]
+
+        parameters = str([f'{key} {value}' for key, value in self.dict.items()])[1:-1]
         sql = f"""CREATE TABLE if not exists {self.table_name} ({parameters})
             """.replace("'", "")
         self.cursor.execute(sql)
