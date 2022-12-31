@@ -1,13 +1,18 @@
-# Database credentials
+#------------------------
+# DATABASE CREDENTIALS  /
+#------------------------
 
 user = '****'
-password = '****!'
+password = '*****'
 host = "****.rds.amazonaws.com"
 port = 3306
 database = '****'
 
+#------------------------------------------------------------------------
+# Name of columns, ANY CHANGE WILL CREATE A NEW TABLE IN THE DATABASE   /
+#------------------------------------------------------------------------
+
 # Define columns and associate var types
-# ANY CHANGE WILL CREATE A NEW TABLE IN THE DATABASE
 input_dict = {
     'ID': 'INT NOT  NULL AUTO_INCREMENT',
     'key1': 'TEXT',
