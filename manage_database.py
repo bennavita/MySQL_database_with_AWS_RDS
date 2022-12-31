@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 
 
 class ManageDataBase(object):
-    def __init__(self, user:str, password:str, host:str, port:str, input_dict:dict[str: str], database_name:str):
+    def __init__(self, user:str, password:str, host:str, port:str, input_dict:dict[str, str], database_name:str):
 
         #First and last key are not columns name (ID and Key of Table)
         self.columns = [key for key in input_dict.keys()][1:-1]
