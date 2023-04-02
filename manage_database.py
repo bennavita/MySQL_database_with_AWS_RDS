@@ -1,12 +1,14 @@
 import pymysql
+import mariadb as maria
 from sqlalchemy import create_engine
 
 
 class ManageDataBase(object):
-    def __init__(self, user:str, password:str, host:str, port:str, input_dict:dict[str, str], database_name:str):
+    def __init__(self, user:str, password:str, host:str, port:str, input_dict:dict[str, str], database_name:str, db_type:str):
 
         #First and last key are not columns name (ID and Key of Table)
         self.columns = [key for key in input_dict.keys()][1:-1]
+        self.db_type = db_type
         self.user = user
         self.password = password
         self.host = host
@@ -27,7 +29,10 @@ class ManageDataBase(object):
                 f"Connexion was unsuccessful due to the following error: {e}")
 
     def connect_database(self):
-        return pymysql.connect(host=self.host, user=self.user, password=self.password)
+        if self.db_type == 'mariadb':
+            return maria.connect(host=self.host, user=self.user, password=self.password, port=self.port, database=self.database_name)
+        else:
+            return pymysql.connect(host=self.host, user=self.user, password=self.password)
 
     def create_database(self):
         sql = f"""CREATE DATABASE IF NOT EXISTS {self.database_name}"""
@@ -43,11 +48,7 @@ class ManageDataBase(object):
         print(self.cursor.fetchall())
 
     def database_engine(self):
-        return create_engine(
-            url="mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(
-                self.user, self.password, self.host, self.port, self.database_name
-            )
-        )
+        return create_engine(f"mysql+pymysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database_name}")
 
     def close_chanel(self):
         try:
@@ -60,8 +61,8 @@ class ManageDataBase(object):
             )
 
 class ManageTable(ManageDataBase):
-    def __init__(self, user:str, password:str, host:str, port:int, input_dict:dict[str, str], database_name: str, table:str):
-        super().__init__(user=user, password=password, host=host, port=port, input_dict=input_dict, database_name=database_name)
+    def __init__(self, user:str, password:str, host:str, port:int, input_dict:dict[str, str], database_name: str, table:str, db_type:str):
+        super().__init__(user=user, password=password, host=host, port=port, input_dict=input_dict, database_name=database_name, db_type=db_type)
         self.table_name = table
         self.create_table()
 
